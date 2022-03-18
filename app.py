@@ -12,8 +12,8 @@ st.set_page_config(
 
 
 @st.cache
-def get_data():
-    return pd.read_excel("epias_auf.xlsx", sheet_name="AUF")
+def get_data(file_name="epias_auf.xlsx"):
+    return pd.read_excel(file_name, sheet_name="AUF")
 
 
 def calculate_results(df, auf_d):
@@ -27,7 +27,6 @@ def calculate_results(df, auf_d):
     return excess_d
 
 
-st.session_state["rawdf"] = get_data()
 st.session_state["auf"] = {}
 
 st.title("EPDK-EPIAS Azami Uzlaştırma Fiyatı Simülasyonu")
@@ -69,24 +68,35 @@ if st.session_state["calc"]:
 
     st.header("Kaynağa göre AUF kaynaklı Farklar")
     st.markdown(
-        """Sıfırdan küçükse Üretim Destekleme Tutarı (ÜDT), büyükse Destekleme Bedeli Borç Tutarı (DBBT) olarak kabul edilebilir.
-
-        Soldaki Hesapla düğmesine basınız.
-        """
+        """Sıfırdan küçükse Üretim Destekleme Tutarı (ÜDT), büyükse Destekleme Bedeli Borç Tutarı (DBBT) olarak kabul edilebilir."""
     )
     st.json(x_d)
 
 st.header("Kaynak Veri")
 with open("epias_auf.xlsx", "rb") as f:
-    st.download_button("Veriyi indir", f, file_name="epias_auf.xlsx")
-# st.download_button("Veriyi indir", data="epias_auf.xlsx", file_name="epias_auf.xlsx")
+    st.download_button("Veri dosyasını indir", f, file_name="epias_auf.xlsx")
+st.session_state["own_data"] = st.checkbox(
+    "Kendi verimi yüklemek istiyorum. (Notlara bakınız)"
+)
+if st.session_state["own_data"]:
+    st_file = st.file_uploader("AUF Dosyası yükle", type="xlsx")
+    if st_file is not None:
+        st.session_state["rawdf"] = get_data(file_name=st_file)
+    else:
+        st.session_state["rawdf"] = get_data()
+else:
+    st.session_state["rawdf"] = get_data()
+
+
 st.dataframe(st.session_state["rawdf"])
+
 st.header("Notlar")
 st.markdown(
     """
 + Hesaplama metodolojisi [Resmi Gazete\'de yayınlanan yönetmelik](https://www.resmigazete.gov.tr/eskiler/2022/03/20220318-16.pdf)ten alınmıştır.
 + Şubat 2022'ye ait veriler [EPİAŞ Şeffaflık Platformu](https://seffaflik.epias.com.tr/)\'ndan alınmıştır.
 + İlgili metodolojiye ait olan hesaplamalar olabildiğince doğru bir şekilde yansıtılmaya çalışılmıştır ancak eksikler/yanlışlar olabilir.
++ Kendi veri setinizi kullanmak istiyorsanız kaynak veri seti dosyasını [indirip](https://github.com/berkorbay/st-auf-simulation/blob/main/epias_auf.xlsx?raw=true) değiştirerek sisteme yükleyebilirsiniz.
 + Üretim kaynakları olarak EPİAŞ Şeffaflık Platformu'ndaki UEVM başlıkları esas alınmıştır. Format tutarlılığı açısından isim değişikliği yapılmış olabilir.
 + Düşük üretim miktarına sahip bazı kaynaklar dahil edilmemiştir.
 + UEVM değerlerinden YEKDEM ve Lisanssız üretim verileri çıkarılmıştır. Güneş üretimi neredeyse tamamen YEKDEM ve Lisanssız üretim olduğu için hesaplamalara dahil edilmemektedir. Mevzuatta belirtilen diğer istisnalar veri eksikliği sebebiyle düzenlenememiştir.
