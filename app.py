@@ -89,7 +89,9 @@ if st.session_state["calc"]:
     col1.metric("DBBT", str(round(dbbt_val, 2)) + "M TL", None)
     col2.metric("ÜDT", str(round(abs(udt_val), 2)) + "M TL", None)
     col3.metric(
-        "GTŞ Payı", str(max(0, round(abs(dbbt_val - udt_val), 2))) + "M TL", None
+        "GTŞ Payı",
+        str(max(0, round(abs(abs(dbbt_val) - abs(udt_val)), 2))) + "M TL",
+        None,
     )
     col4.metric(
         "Destek Katsayısı", str(min(1.0, round(dbbt_val / abs(udt_val), 4))), None
