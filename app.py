@@ -7,7 +7,9 @@ from datetime import datetime, timedelta
 
 # from funs import get_prices
 st.set_page_config(
-    page_title="EPDK-EPIAS Azami Uzlaştırma Fiyatı Simülasyonu", layout="wide"
+    page_title="EPDK-EPİAŞ Azami Uzlaştırma Fiyatı Simülasyonu",
+    page_icon=":bolt:",
+    layout="wide",
 )
 
 
