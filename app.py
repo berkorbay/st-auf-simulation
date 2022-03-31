@@ -89,6 +89,12 @@ for i in [
     )
 
 st.header("Özet Veriler")
+if st.session_state["use_fixed_price"]:
+    st.info(
+        "Hesaplamada bütün PTF değerleri sabit fiyat olan "
+        + str(st.session_state["fixed_price"])
+        + "TL/MWh ile değiştirilmiştir. Veri dosyasındaki PTF değerlerini kullanmak için sol menüden ilgili seçimi kaldırınız."
+    )
 if st.session_state["calc"]:
     x_d = calculate_results(
         df=st.session_state["rawdf"],
@@ -142,12 +148,7 @@ if st.session_state["own_data"]:
 else:
     st.session_state["rawdf"] = get_data()
 
-if st.session_state["use_fixed_price"]:
-    st.info(
-        "Bütün PTF değerleri hesaplamada sabit fiyat olan "
-        + str(st.session_state["fixed_price"])
-        + "TL/MWh ile değiştirilmiştir. PTF değerlerini kullanmak için sol menüden ilgili seçimi kaldırınız."
-    )
+
 st.dataframe(st.session_state["rawdf"])
 
 st.header("Notlar")
