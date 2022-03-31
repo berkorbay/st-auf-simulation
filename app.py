@@ -13,7 +13,8 @@ st.set_page_config(
 )
 
 st.session_state["min_price"] = 0
-st.session_state["max_price"] = 2500
+st.session_state["max_price"] = 5000
+st.session_state["fixed_price"] = 2500
 
 
 @st.cache
@@ -48,14 +49,25 @@ st.markdown(
 st.sidebar.header("Azami Uzlaştırma Fiyatı")
 st.session_state["calc"] = st.sidebar.button("Hesapla")
 
-st.session_state["use_max_price"] = st.sidebar.checkbox(
-    "PTF'yi tavan fiyat (" + str(st.session_state["max_price"]) + " TL) ile değiştir.",
+st.session_state["use_fixed_price"] = st.sidebar.checkbox(
+    "PTF'yi sabit fiyat ile değiştir.",
     value=False,
 )
 
+if st.session_state["use_fixed_price"]:
+    st.session_state["fixed_price"] = st.sidebar.number_input(
+        "Sabit PTF", 0, 5000, 2500, 50
+    )
+
+
+st.sidebar.header("Azami Uzlaştırma Fiyatı")
 for i in ["Doğal Gaz", "İthal Kömür"]:
     st.session_state["auf"][i] = st.sidebar.number_input(
-        i, min_value=0, max_value=5000, value=2500, step=50
+        i,
+        min_value=st.session_state["min_price"],
+        max_value=st.session_state["max_price"],
+        value=2500,
+        step=50,
     )
 
 for i in [
@@ -69,7 +81,11 @@ for i in [
     "Biyokütle",
 ]:
     st.session_state["auf"][i] = st.sidebar.number_input(
-        i, min_value=0, max_value=5000, value=1200, step=50
+        i,
+        min_value=st.session_state["min_price"],
+        max_value=st.session_state["max_price"],
+        value=1200,
+        step=50,
     )
 
 st.header("Özet Veriler")
@@ -78,7 +94,9 @@ if st.session_state["calc"]:
         df=st.session_state["rawdf"],
         auf_d=st.session_state["auf"],
         fixed_price=(
-            st.session_state["max_price"] if st.session_state["use_max_price"] else None
+            st.session_state["fixed_price"]
+            if st.session_state["use_fixed_price"]
+            else None
         ),
     )
 
@@ -90,7 +108,7 @@ if st.session_state["calc"]:
     col2.metric("ÜDT", str(round(abs(udt_val), 2)) + "M TL", None)
     col3.metric(
         "GTŞ Payı",
-        str(max(0, round(abs(abs(dbbt_val) - abs(udt_val)), 2))) + "M TL",
+        str(max(0, round(abs(dbbt_val) - abs(udt_val), 2))) + "M TL",
         None,
     )
     col4.metric(
@@ -124,15 +142,18 @@ if st.session_state["own_data"]:
 else:
     st.session_state["rawdf"] = get_data()
 
-if st.session_state["use_max_price"]:
+if st.session_state["use_fixed_price"]:
     st.info(
-        "Bütün PTF değerleri hesaplamada tavan fiyat olan "
-        + str(st.session_state["max_price"])
+        "Bütün PTF değerleri hesaplamada sabit fiyat olan "
+        + str(st.session_state["fixed_price"])
         + "TL/MWh ile değiştirilmiştir. PTF değerlerini kullanmak için sol menüden ilgili seçimi kaldırınız."
     )
 st.dataframe(st.session_state["rawdf"])
 
 st.header("Notlar")
+st.info(
+    "Bu uygulama güncelleniyor olabilir. En son durumu takip etmek için: https://github.com/berkorbay/st-auf-simulation/commits/main"
+)
 st.markdown(
     """
 + Hesaplama metodolojisi Resmi Gazete'de paylaşılan [17 Mart 2022 tarihli 10866 sayılı EPDK Kurul Kararı](https://www.resmigazete.gov.tr/eskiler/2022/03/20220318-16.pdf)\'ndan alınmıştır. Sonraki mevzuatlarda metodoloji değişiklikleri varsa yansıtılmamıştır.
