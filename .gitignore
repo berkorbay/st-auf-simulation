@@ -153,3 +153,4 @@ cython_debug/
 
 **/.DS_Store
 ~$epias_auf.xlsx
+.vscode/**
